@@ -1,19 +1,9 @@
-import { SteamSearchGame,SteamGameDetails } from '../../types/steam';
+import { SteamEnrichedApp, SteamAppType } from '../../types/steam';
 
-export const mapSearchGame = (item: any): SteamSearchGame => ({
+export const mapEnrichedApp = (
+  item: any
+): SteamEnrichedApp => ({
   appid: item.appid,
   name: item.name,
-  tiny_image: item.tiny_image,
-  price: item.price,
-  platforms: item.platforms,
-});
-
-export const mapGameDetails = (data: any): SteamGameDetails => ({
-  steam_appid: data.steam_appid,
-  name: data.name,
-  header_image: data.header_image,
-  short_description: data.short_description,
-  genres: data.genres ?? [],
-  screenshots: data.screenshots ?? [],
-  price_overview: data.price_overview,
+  type: item.type as SteamAppType, // Solo si viene de Store API
 });
