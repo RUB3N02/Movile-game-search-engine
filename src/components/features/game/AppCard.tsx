@@ -8,29 +8,40 @@ interface Props {
 export function AppCard({ app }: Props) {
   if (!app) return null;
 
-  const { name, type, tiny_image, price } = app;
-  const imageUrl = tiny_image || "https://via.placeholder.com/150";
+  const { name, tiny_image, price } = app;
 
   return (
-    <View style={{
-      backgroundColor: "#2a2a2a",
-      padding: 12,
-      borderRadius: 12,
-      marginBottom: 12
-    }}>
-      <Image
-        source={{ uri: imageUrl }}
-        style={{ width: "100%", height: 150, borderRadius: 12 }}
-        resizeMode="cover"
-      />
-      <Text style={{ color: "#fff", fontWeight: "bold", marginTop: 8, fontSize: 16 }}>
+    <View
+      style={{
+        backgroundColor: "#1f1f1f",
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 12,
+      }}
+    >
+      {/* Imagen solo si existe */}
+      {tiny_image ? (
+        <Image
+          source={{ uri: tiny_image }}
+          style={{ width: "100%", height: 150, borderRadius: 12 }}
+          resizeMode="cover"
+        />
+      ) : null}
+
+      {/* Nombre */}
+      <Text
+        style={{
+          color: "#fff",
+          fontWeight: "bold",
+          marginTop: 8,
+          fontSize: 16,
+        }}
+      >
         {name}
       </Text>
-      <Text style={{ color: "#aaa", marginTop: 2, fontSize: 12 }}>
-        {type.toUpperCase()}
-      </Text>
 
-      {price && (
+      {/* Precio */}
+      {price ? (
         <View style={{ marginTop: 4 }}>
           {price.free ? (
             <Text style={{ color: "#0f0", fontWeight: "600" }}>Gratis</Text>
@@ -45,7 +56,7 @@ export function AppCard({ app }: Props) {
             </>
           )}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }

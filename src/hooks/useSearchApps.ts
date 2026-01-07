@@ -4,7 +4,7 @@ import { steamFetch } from "../api/steam.client";
 export interface SteamAppFromStore {
   id: number;
   name: string;
-  type: string;       // "game", "dlc", "software", etc.
+  type: string; // game, dlc, software, etc.
   tiny_image: string;
   price?: {
     currency: string;
@@ -19,52 +19,56 @@ const PAGE_SIZE = 20;
 
 export const useSearchApps = (term: string) => {
   const [apps, setApps] = useState<SteamAppFromStore[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalApps, setTotalApps] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
 
-  // Reinicia página cuando cambia el término
+  // Resetear cuando cambia el término
   useEffect(() => {
+    setApps([]);
     setPage(1);
+    setTotalItems(0);
   }, [term]);
 
+  // Llamada a la API cuando cambia term o page
   useEffect(() => {
-    async function fetchApps() {
+    if (!term.trim()) return; // nada que buscar
+
+    const fetchApps = async () => {
       setLoading(true);
-
       try {
-        // Si no hay término, usamos "a" para devolver resultados por defecto
-        const searchTerm = term.trim() === "" ? "a" : term;
-        const endpoint = `/storesearch/?term=${encodeURIComponent(searchTerm)}&l=spanish&cc=us`;
+        const data: any = await steamFetch(`/storesearch/?term=${term}&l=spanish&cc=us`);
+        const itemsArray: SteamAppFromStore[] = Object.values(data.items || {}).map((app: any) => ({
+          id: app.id,
+          name: app.name,
+          type: app.type || "APP",
+          tiny_image: app.tiny_image,
+          price: app.price || null,
+        }));
 
-        const data = await steamFetch<{ total: number; items: SteamAppFromStore[] }>(
-          endpoint
-        );
-
-        // Total de apps
-        setTotalApps(data.total || data.items.length);
+        setTotalItems(itemsArray.length);
 
         // Paginación local
         const start = (page - 1) * PAGE_SIZE;
-        const newApps = data.items.slice(start, start + PAGE_SIZE);
+        const newApps = itemsArray.slice(start, start + PAGE_SIZE);
 
-        // Agregar a la lista existente si es scroll infinito
-        setApps((prev) => (page === 1 ? newApps : [...prev, ...newApps]));
+        setApps(prev => (page === 1 ? newApps : [...prev, ...newApps]));
       } catch (error) {
         console.error("Error fetching apps:", error);
         setApps([]);
-        setTotalApps(0);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchApps();
   }, [term, page]);
 
   const loadMore = () => {
-    if (apps.length < totalApps) setPage((prev) => prev + 1);
+    if (!loading && apps.length < totalItems) {
+      setPage(prev => prev + 1);
+    }
   };
 
-  return { apps, loading, loadMore, totalApps };
+  return { apps, loading, loadMore };
 };
